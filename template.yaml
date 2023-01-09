@@ -44,6 +44,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref Table
+      Role: !GetAtt IAMLambdaRole.Arn
 
   FindArticleFunction:
     Type: AWS::Serverless::Function
@@ -68,6 +69,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref Table
+      Role: !GetAtt IAMLambdaRole.Arn
 
   CreateArticleFunction:
     Type: AWS::Serverless::Function
@@ -88,7 +90,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref Table
-
+      Role: !GetAtt IAMLambdaRole.Arn
   DeleteArticleFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -108,15 +110,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref Table
-
-  # AuthorizerFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: !Sub "musiclibrary-${StageName}-AuthorizerFunction"
-  #     Handler: src.handler.authorizer
-  #     Runtime: python3.7
-  #     Policies:
-  #       - CloudWatchPutMetricPolicy: { }
+      Role: !GetAtt IAMLambdaRole.Arn
 
   IAMLambdaRole:
     Type: AWS::IAM::Role
@@ -145,7 +139,6 @@ Resources:
                 Resource: "*"
                 Effect: Allow
 
-
   # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-simpletable.html
   # https://docs.aws.amazon.com/fr_fr/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html
   Table:
@@ -153,36 +146,20 @@ Resources:
     Properties:
       TableName: "epiblog"
       BillingMode: PAY_PER_REQUEST
-      SSESpecification:
-        SSEEnabled: true
-        KMSMasterKeyId: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
       AttributeDefinitions:
         - AttributeName: uuid
           AttributeType: S
         - AttributeName: title
           AttributeType: S
-        # - AttributeName: content
-        #   AttributeType: S
-        # - AttributeName: author
-        #   AttributeType: S
-        # - AttributeName: tags
-        #   AttributeType: List<S>
-        # - AttributeName: owner_id
-        #   AttributeType: S 
       KeySchema:
         - AttributeName: uuid
           KeyType: HASH
         - AttributeName: title
           KeyType: RANGE
-      # GlobalSecondaryIndexes:
-      #   - IndexName: tag
-      #     KeySchema:
-      #       - AttributeName: tag
-      #         KeyType: HASH
-      #       - AttributeName: uuid
-      #         KeyType: RANGE
-      #     Projection:
-      #       ProjectionType: ALL
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !Ref KmsKey
 
   KmsKey:
     Type: AWS::KMS::Key
@@ -196,7 +173,7 @@ Resources:
             Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-              AWS: 
+              AWS: !GetAtt IAMLambdaRole.Arn
             Action:
               - kms:Encrypt
               - kms:Decrypt
@@ -204,7 +181,6 @@ Resources:
               - kms:GenerateDataKey*
               - kms:DescribeKey
             Resource: "*"
-
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:

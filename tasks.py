@@ -6,7 +6,7 @@ from invoke import task
 
 
 def _project_name():
-    return "helloworld"
+    return "epiblog"
 
 
 def _aws_region():
@@ -42,11 +42,11 @@ def stack_deploy(ctx, cicd_bucket):
         ctx.run(f"aws s3 cp spec/api-spec.yaml s3://{cicd_bucket}/spec/api-spec.yaml")
         ctx.run(f"sam package --s3-bucket {cicd_bucket} --output-template-file packaged.yaml")
         ctx.run(f"sam deploy packaged.yaml "
-                f"--capabilities CAPABILITY_IAM "
+                f"--capabilities CAPABILITY_NAMED_IAM "
                 f"--parameter-overrides "
                 f" CicdBucket={cicd_bucket} "
                 f"--s3-bucket {cicd_bucket} "
-                f"--stack-name {_project_name()}"
+                f"--stack-name {_project_name()} "
                 f"--region {_aws_region()} ")
 
 

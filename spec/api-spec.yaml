@@ -105,20 +105,20 @@ paths:
           schema:
             type: string
       responses:
-        200:
+        204:
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Helloworld"
+                $ref: "#/components/schemas/Empty"
       security:
         - sigv4: [ ]
       x-amazon-apigateway-integration:
         responses:
           default:
-            statusCode: 200
+            statusCode: 204
         uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindHelloMsgFunction.Arn}/invocations"
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteArticleFunction.Arn}/invocations"
         passthroughBehavior: when_no_match
         httpMethod: POST
         type: aws_proxy
@@ -128,10 +128,18 @@ components:
     Article:
       type: object
       properties:
-        language:
+        id:
           type: string
-        value:
+        author:
           type: string
+        title:
+          type: string
+        genre:
+          type: string
+        date:
+          type: string
+    Empty:
+      type: object
 
 securityDefinitions:
   sigv4:
@@ -139,6 +147,16 @@ securityDefinitions:
     name: Authorization
     in: header
     x-amazon-apigateway-authtype: awsSigv4
+
+  authorizer:
+    type: apiKey
+    name: Authorization
+    in: header
+    x-amazon-apigateway-authtype: 'custom'
+    x-amazon-apigateway-authorizer:
+      type: token
+      authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AuthorizerFunction}/invocations
+
 
 x-amazon-apigateway-request-validators:
   validate_request:

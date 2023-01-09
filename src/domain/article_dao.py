@@ -1,7 +1,7 @@
 import logging
 
 from src.domain.article import Article
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 
 logger = logging.getLogger()
 
@@ -26,11 +26,11 @@ class ArticleDao:
     def find_by_uuid(self, uuid) -> Article:
         logger.info("[entity] entity")
 
-        result = self.table.get_item(
-            Key={ "uuid": uuid}
+        result = self.table.query(
+            KeyConditionExpression=Key("uuid").eq(uuid)
         )
 
-        return result["Item"] if "Item" in result else None
+        return result["Items"][0] if "Items" in result else None
 
     def find_by_owner_id(self, owner_id) -> Article:
         logging.info("[article] find_by_owner_id")
@@ -42,9 +42,8 @@ class ArticleDao:
     def find_by_tag(self, tag):
         logging.info("[article] find_by_tag")
 
-        result = self.table.query(
-            IndexName="tag",
-            KeyConditionExpression=Key("tags").contains(tag),
+        result = self.table.scan(
+            FilterExpression=Attr("tags").contains(tag),
         )
 
         print(result)

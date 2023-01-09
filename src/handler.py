@@ -1,7 +1,5 @@
 from src.domain.article import Article
 from src.domain.article_dao import ArticleDao
-from src.services.csv_importer import CSVImporter
-from src.services.authorizer import Authorizer
 from src.core.resources_mgr import ResourcesMgr
 
 import logging
@@ -129,11 +127,11 @@ def find_by_tag(event, context):
         "body": json.dumps(entities, default=lambda entity: entity.to_json()),
     }
 
-def authorizer(event, context):
-    print(event)
+# def authorizer(event, context):
+#     print(event)
 
-    lambda_function_arn = context.invoked_function_arn
-    aws_account_id = lambda_function_arn.split(":")[4]
-    print(aws_account_id)
+#     lambda_function_arn = context.invoked_function_arn
+#     aws_account_id = lambda_function_arn.split(":")[4]
+#     print(aws_account_id)
 
-    return Authorizer().authenticate(account=aws_account_id, token=event["authorizationToken"])
+#     return Authorizer().authenticate(account=aws_account_id, token=event["authorizationToken"])
