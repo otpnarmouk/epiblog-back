@@ -184,6 +184,6 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: arn:aws:iam::769070036876:root
+              AWS: AWS::AccountId
             Action: kms:*
             Resource: "*"
