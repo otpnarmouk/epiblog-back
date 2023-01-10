@@ -10,7 +10,7 @@ def _project_name():
 
 
 def _aws_region():
-    return "eu-west-1"
+    return "eu-west-3"
 
 
 def _venv_dir():

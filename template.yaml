@@ -19,6 +19,16 @@ Resources:
           Parameters:
             # Chemin vers la spec OpenAPI
             Location: !Sub "s3://${CicdBucket}/spec/api-spec.yaml"
+          paths:
+            /articles:
+              post:
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      headers:
+                        Access-Control-Allow-Origin: "'*'"
+      
+        #AllowCredentials: true
 
   # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
   FindArticlesFunction:
@@ -91,6 +101,7 @@ Resources:
         Variables:
           TABLE_NAME: !Ref Table
       Role: !GetAtt IAMLambdaRole.Arn
+      
   DeleteArticleFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -107,6 +118,27 @@ Resources:
             RestApiId: !Ref DefaultApi
             Path: /articles/{article_id}
             Method: DELETE
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Role: !GetAtt IAMLambdaRole.Arn
+      
+  GetTagsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.handler.get_tags
+      Runtime: python3.7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+        - CloudWatchPutMetricPolicy: { }
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref DefaultApi
+            Path: /articles/tags
+            Method: GET
       Environment:
         Variables:
           TABLE_NAME: !Ref Table
@@ -184,6 +216,6 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: AWS::AccountId
+              AWS: !Ref AWS::AccountId
             Action: kms:*
             Resource: "*"

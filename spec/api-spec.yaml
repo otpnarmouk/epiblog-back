@@ -28,12 +28,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/Article"
       security:
-        - sigv4: [ ]
-      x-amazon-apigateway-request-validator: validate_request
+        - CognitoAuthorizer: [ ]
       x-amazon-apigateway-integration:
+        type: aws
         responses:
           default:
             statusCode: 201
+            headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,DELETE,PUT'"
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateArticleFunction.Arn}/invocations"
         passthroughBehavior: when_no_match
@@ -45,7 +49,7 @@ paths:
       parameters:
         - in: query
           name: tag
-          required: true
+          required: false
           schema:
             type: string
       responses:
@@ -58,11 +62,16 @@ paths:
                 items:
                   $ref: "#/components/schemas/Article"
       security:
-        - sigv4: [ ]
+        - CognitoAuthorizer: [ ]
       x-amazon-apigateway-integration:
+        type: aws
         responses:
           default:
             statusCode: 200
+            headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,DELETE,PUT'"
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindArticlesFunction.Arn}/invocations"
         passthroughBehavior: when_no_match
@@ -86,11 +95,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/Article"
       security:
-        - sigv4: [ ]
+        - CognitoAuthorizer: [ ]
       x-amazon-apigateway-integration:
+        type: aws
         responses:
           default:
             statusCode: 200
+            headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,DELETE,PUT'"
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindArticleFunction.Arn}/invocations"
         passthroughBehavior: when_no_match
@@ -112,17 +126,52 @@ paths:
               schema:
                 $ref: "#/components/schemas/Empty"
       security:
-        - sigv4: [ ]
+        - CognitoAuthorizer: [ ]
       x-amazon-apigateway-integration:
+        type: aws
         responses:
           default:
             statusCode: 204
+            headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,DELETE,PUT'"
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteArticleFunction.Arn}/invocations"
         passthroughBehavior: when_no_match
         httpMethod: POST
         type: aws_proxy
-
+        
+  /articles/tags:
+    get:
+      summary: "Get every tags"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+      security:
+        - CognitoAuthorizer: [ ]
+      x-amazon-apigateway-integration:
+        type: aws
+        responses:
+          default:
+            statusCode: 200
+            headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,DELETE,PUT'"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTagsFunction.Arn}/invocations"
+        passthroughBehavior: when_no_match
+        httpMethod: GET
+        type: aws_proxy
+        
+  
 components:
   schemas:
     Article:
@@ -138,15 +187,27 @@ components:
           type: string
         date:
           type: string
+    Tag:
+      type: string
     Empty:
       type: object
-
+      
 securityDefinitions:
   sigv4:
     type: apiKey
     name: Authorization
     in: header
     x-amazon-apigateway-authtype: awsSigv4
+  CognitoAuthorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: cognito_user_pools
+      x-amazon-apigateway-authorizer:
+        type: cognito_user_pools
+        providerARNs:
+          - arn:aws:cognito-idp:eu-west-3:178526612952:userpool/eu-west-3_ZuhvJ3ydE
+          
 
   authorizer:
     type: apiKey

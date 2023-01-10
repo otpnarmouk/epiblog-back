@@ -19,7 +19,10 @@ class ArticleDao:
     def delete(self, uuid) -> None:
         logger.info("[Article] delete")
 
-        self.table.delete_item(Key={"uuid": uuid})
+        object = self.table.scan(
+            FilterExpression=Attr("uuid").eq(uuid)
+            )
+        self.table.delete_item(Key={"uuid": uuid, "title": object["Items"][0]["title"]}) if (len(object["Items"]) == 1) else None
 
         return None
 
@@ -41,11 +44,22 @@ class ArticleDao:
 
     def find_by_tag(self, tag):
         logging.info("[article] find_by_tag")
-
-        result = self.table.scan(
-            FilterExpression=Attr("tags").contains(tag),
-        )
-
-        print(result)
+        
+        if tag is not None:
+            result = self.table.scan(
+                FilterExpression=Attr("tags").contains(tag),
+            )
+        else:
+            result = self.table.scan()
 
         return result["Items"] if "Items" in result else None
+        
+    def get_tags(self):
+        logging.info("[article] find_by_tag")
+        
+        result = self.table.scan()
+        tags = result["Items"]
+        print(tags)
+        
+        return tags
+

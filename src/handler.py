@@ -34,8 +34,12 @@ def create_article(event, context):
         )
 
     return {
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
+        "statusCode": 201,
+        "headers": {"Content-Type": "application/json",
+            "Access-Control-Allow-Headers" : "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+            "Access-Control-Allow-Origin": "*",  
+            "Access-Control-Allow-Methods": "POST, OPTIONS" 
+        },
         "body": article.to_json(),
     }
 
@@ -55,9 +59,13 @@ def delete_article(event, context):
         )
 
     return {
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": book.to_json(),
+        "statusCode": 204,
+        "headers": {"Content-Type": "application/json",
+            "Access-Control-Allow-Headers" : "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+            "Access-Control-Allow-Origin": "*",  
+            "Access-Control-Allow-Methods": "DELETE, OPTIONS" 
+        },
+        "body": "",
     }
 
 def find_by_uuid(event, context):
@@ -78,7 +86,11 @@ def find_by_uuid(event, context):
 
     return {
         "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
+        "headers": {"Content-Type": "application/json",
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*", 
+            "Access-Control-Allow-Methods": "GET"
+        },
         "body": json.dumps(entities, default=lambda entity: entity.to_json()),
     }
 
@@ -101,7 +113,11 @@ def find_by_owner_id(event, context):
 
     return {
         "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
+        "headers": {"Content-Type": "application/json", 
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*", 
+            "Access-Control-Allow-Methods": "GET"
+        },
         "body": json.dumps(entities, default=lambda entity: entity.to_json()),
     }
 
@@ -111,9 +127,12 @@ def find_by_tag(event, context):
         resources_mgr.metrics.put_metric(
             namespace="epiblog", operation="find", is_exception=False
         )
+        tag = None
+        if (event["queryStringParameters"] is not None):
+            if ("tag" in event["queryStringParameters"]):
+                tag = event["queryStringParameters"]["tag"]
 
-        entities = dao.find_by_tag(event["queryStringParameters"]["tag"],
-                                                )
+        entities = dao.find_by_tag(tag          )
 
     except BaseException as e:
         logging.critical(e, exc_info=True)
@@ -123,15 +142,35 @@ def find_by_tag(event, context):
 
     return {
         "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
+        "headers": {"Content-Type": "application/json", 
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*", 
+            "Access-Control-Allow-Methods": "GET"
+        },
         "body": json.dumps(entities, default=lambda entity: entity.to_json()),
     }
+    
+def get_tags(event, context):
+    try:
 
-# def authorizer(event, context):
-#     print(event)
+        resources_mgr.metrics.put_metric(
+            namespace="epiblog", operation="find", is_exception=False
+        )
+        
+        entities = dao.get_tags()
 
-#     lambda_function_arn = context.invoked_function_arn
-#     aws_account_id = lambda_function_arn.split(":")[4]
-#     print(aws_account_id)
+    except BaseException as e:
+        logging.critical(e, exc_info=True)
+        resources_mgr.metrics.put_metric(
+            namespace="epiblog", operation="find", is_exception=True
+        )
 
-#     return Authorizer().authenticate(account=aws_account_id, token=event["authorizationToken"])
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json", 
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*", 
+            "Access-Control-Allow-Methods": "GET"
+        },
+        "body": json.dumps(entities, default=lambda entity: entity.to_json()),
+    }

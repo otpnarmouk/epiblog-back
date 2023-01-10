@@ -23,10 +23,3 @@ class Article:
             return NotImplemented
 
         return self.title == other.title and self.content == other.content and self.owner_id == other.owner_id and self.uuid == other.uuid
-
-# Article
-# Post /article   #Create
-# Get /article/id #GetByArticleId
-# Get /article?owner_id=uuid #GetArticleByOwnerId
-# Get /article?tag=xxx #GetArticleByTag 
-# Delete /article/id #DeleteByArticleId
