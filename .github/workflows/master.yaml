@@ -18,6 +18,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y python3-pip
         python3 -m pip install --upgrade pip
+        
       
     - name: Install invoke
       run: python3 -m pip install invoke wget configobj psutil
@@ -31,3 +32,4 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_DEFAULT_REGION: eu-west-3
