@@ -11,7 +11,7 @@ jobs:
     
     steps:
     - name: Checkout the code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup python
       run: |
@@ -24,7 +24,7 @@ jobs:
 
     - name: Invoke bootstrap
       run: invoke bootstrap
-       
+
     - name: Deploy the CloudFormation stack
       run: invoke stack-deploy -c epiblog-back
       env:
